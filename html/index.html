@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tool Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --background-color: #f8f9fa;
+      --card-background: #ffffff;
+      --text-color: #333333;
+      --hover-color: #2980b9;
+      --sidebar-width: 250px;
+      --sidebar-collapsed-width: 70px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
+      line-height: 1.6;
+      display: flex;
+      min-height: 100vh;
+      transition: margin-left 0.3s ease;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+      width: var(--sidebar-width);
+      background-color: var(--primary-color);
+      color: white;
+      position: fixed;
+      height: 100vh;
+      padding: 1rem;
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+
+    .sidebar.collapsed {
+      width: var(--sidebar-collapsed-width);
+    }
+
+    .sidebar.collapsed .menu-text,
+    .sidebar.collapsed .submenu {
+      display: none;
+    }
+
+    .sidebar-header {
+      padding: 1rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .toggle-btn {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      font-size: 1.2rem;
+      padding: 0.5rem;
+    }
+
+    .sidebar-menu {
+      list-style: none;
+    }
+
+    .menu-item {
+      margin-bottom: 0.5rem;
+      position: relative;
+    }
+
+    .menu-link {
+      color: white;
+      text-decoration: none;
+      padding: 0.8rem 1rem;
+      display: flex;
+      align-items: center;
+      border-radius: 5px;
+      transition: all 0.3s ease;
+    }
+
+    .menu-link:hover {
+      background-color: var(--hover-color);
+    }
+
+    .menu-link i {
+      margin-right: 10px;
+      width: 20px;
+      text-align: center;
+    }
+
+    .submenu {
+      list-style: none;
+      margin-left: 2rem;
+      margin-top: 0.5rem;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    .menu-item.active .submenu {
+      max-height: 500px;
+    }
+
+    .menu-item.active > .menu-link {
+      background-color: var(--hover-color);
+    }
+
+    /* Main Content Styles */
+    .main-content {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      padding: 2rem;
+      transition: margin-left 0.3s ease;
+      position: relative;
+    }
+
+    .main-content.expanded {
+      margin-left: var(--sidebar-collapsed-width);
+    }
+
+    .open-sidebar-btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      display: none;
+      z-index: 1001;
+    }
+
+    .main-content.expanded .open-sidebar-btn {
+      display: block;
+    }
+
+    .navbar {
+      background-color: var(--primary-color);
+      padding: 1rem 2rem;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      right: 0;
+      left: var(--sidebar-width);
+      z-index: 1000;
+    }
+
+    .logo {
+      color: white;
+      font-size: 1.5rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo i {
+      color: var(--secondary-color);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 5rem auto 2rem;
+      padding: 0 2rem;
+    }
+
+    .dashboard-title {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: var(--primary-color);
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      padding: 1rem;
+    }
+
+    .tool-card {
+      background: var(--card-background);
+      border-radius: 10px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      text-decoration: none;
+      color: var(--text-color);
+    }
+
+    .tool-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    .tool-icon {
+      font-size: 2rem;
+      color: var(--secondary-color);
+      margin-bottom: 1rem;
+    }
+
+    .tool-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .tool-description {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    footer {
+      background-color: var(--primary-color);
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      left: var(--sidebar-width);
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      
+      .main-content {
+        margin-left: 0;
+      }
+      
+      .navbar {
+        left: 0;
+      }
+      
+      footer {
+        left: 0;
+      }
+      
+      .tools-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <i class="fas fa-tools"></i>
+        <span class="menu-text">Technical Support</span>
+      </div>
+      <button class="toggle-btn" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+    <ul class="sidebar-menu">
+      <li class="menu-item">
+        <a href="#" class="menu-link" onclick="toggleSubmenu(this)">
+          <i class="fas fa-home"></i>
+          <span class="menu-text">Dashboard</span>
+        </a>
+      </li>
+      <li class="menu-item">
+        <a href="#" class="menu-link" onclick="toggleSubmenu(this)">
+          <i class="fas fa-cog"></i>
+          <span class="menu-text">System Tools</span>
+        </a>
+        <ul class="submenu">
+          <li><a href="https://4969n4.csb.app/" target="_blank" class="menu-link">Contract Serial Number Finder</a></li>
+          <li><a href="https://tygj5p-5000.csb.app/" target="_blank" class="menu-link">Contract & QR Checker</a></li>
+          <li><a href="https://ry63rn.csb.app/" target="_blank" class="menu-link">Fetch QR ID & mposMerchantId Tool</a></li>
+          <li><a href="https://tg2y32-5000.csb.app/" target="_blank" class="menu-link">Device Management System</a></li>
+        </ul>
+      </li>
+      <li class="menu-item">
+        <a href="#" class="menu-link" onclick="toggleSubmenu(this)">
+          <i class="fas fa-mobile-alt"></i>
+          <span class="menu-text">Device Management</span>
+        </a>
+        <ul class="submenu">
+          <li><a href="https://pwtyc3.csb.app/" target="_blank" class="menu-link">Active Device MPOS</a></li>
+          <li><a href="https://4969n4.csb.app/" target="_blank" class="menu-link">Contract Serial Number Finder & TING BOX</a></li>
+          <li><a href="https://tlvx7x-5000.csb.app/" target="_blank" class="menu-link">TING BOX</a></li>
+        </ul>
+      </li>
+      <li class="menu-item">
+        <a href="#" class="menu-link" onclick="toggleSubmenu(this)">
+          <i class="fas fa-credit-card"></i>
+          <span class="menu-text">Payment Systems</span>
+        </a>
+        <ul class="submenu">
+          <li><a href="https://zgp33v.csb.app/" target="_blank" class="menu-link">NextPay OTP Fetcher</a></li>
+        </ul>
+      </li>
+      <li class="menu-item">
+        <a href="#" class="menu-link" onclick="toggleSubmenu(this)">
+          <i class="fas fa-file-contract"></i>
+          <span class="menu-text">Contract Systems</span>
+        </a>
+        <ul class="submenu">
+          <li><a href="https://wvlxhv.csb.app/" target="_blank" class="menu-link">Contract Approval System</a></li>
+          <li><a href="https://9nzrjf-5000.csb.app/" target="_blank" class="menu-link">Rollback State Appendix</a></li>
+          <li><a href="https://n62qk9.csb.app/" target="_blank" class="menu-link">Appendix Switch Type</a></li>
+          <li><a href="https://6h5drs-5000.csb.app/" target="_blank" class="menu-link">Get Email Merchant</a></li>
+        </ul>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <button class="open-sidebar-btn" onclick="openSidebar()">
+      <i class="fas fa-bars"></i>
+    </button>
+    <nav class="navbar">
+      <div class="logo">
+        <span>Technical Support Tool</span>
+      </div>
+    </nav>
+
+    <div class="container">
+      <h1 class="dashboard-title">Tool Management System</h1>
+      
+      <div class="tools-grid">
+        <a href="https://4969n4.csb.app/" target="_blank" class="tool-card">
+          <div class="tool-icon">
+            <i class="fas fa-search"></i>
+          </div>
+          <h2 class="tool-title">Contract Serial Number Finder</h2>
+          <p class="tool-description">Find and verify contract serial numbers</p>
+        </a>
+
+        <a href="https://tygj5p-5000.csb.app/" target="_blank" class="tool-card">
+          <div class="tool-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <h2 class="tool-title">Contract & QR Checker</h2>
+          <p class="tool-description">Check and verify contract and QR code status</p>
+        </a>
+
+        <a href="https://ry63rn.csb.app/" target="_blank" class="tool-card">
+          <div class="tool-icon">
+            <i class="fas fa-edit"></i>
+          </div>
+          <h2 class="tool-title">Fetch QR ID & mposMerchantId Tool</h2>
+          <p class="tool-description">Manage and customize tool display names</p>
+        </a>
+
+        <a href="https://tg2y32-5000.csb.app/" target="_blank" class="tool-card">
+          <div class="tool-icon">
+            <i class="fas fa-cog"></i>
+          </div>
+          <h2 class="tool-title">Device Management System</h2>
+          <p class="tool-description">Configure light settings and preferences</p>
+        </a>
+
+        <a href="https://pwtyc3.csb.app/" target="_blank" class="tool-card">
+          <div class="tool-icon">
+            <i class="fas fa-mobile-alt"></i>
+          </div>
+          <h2 class="tool-title">Active Device MPOS</h2>
+          <p class="tool-description">Monitor and manage active MPOS devices</p>
+        </a>
+
+        <a href="https://h4fr36-5000.csb.app/" target="_blank" class="tool-card">
+          <div class="tool-icon">
+            <i class="fas fa-qrcode"></i>
+          </div>
+          <h2 class="tool-title">Contract Serial Number Finder & TING BOX</h2>
+          <p class="tool-description">Find and manage TING BOX QR codes via email</p>
+        </a>
+
+        <!-- <a href="https://tygj5p-5000.csb.app/" target="_blank" class="tool-card">
+          <div class="tool-icon">
+            <i class="fas fa-box"></i>
+          </div>
+          <h2 class="tool-title">TINGBOX</h2>
+          <p class="tool-description">Manage TINGBOX devices and configurations</p>
+        </a> -->
+
+        <a href="https://zgp33v.csb.app/" target="_blank" class="tool-card">
+          <div class="tool-icon">
+            <i class="fas fa-credit-card"></i>
+          </div>
+          <h2 class="tool-title">NextPay OTP Fetcher</h2>
+          <p class="tool-description">Retrieve and manage NextPay OTP codes</p>
+        </a>
+
+        <a href="https://wvlxhv.csb.app/" target="_blank" class="tool-card">
+          <div class="tool-icon">
+            <i class="fas fa-file-contract"></i>
+          </div>
+          <h2 class="tool-title">Contract Approval System</h2>
+          <p class="tool-description">Manage and approve contract documents</p>
+        </a>
+
+        <a href="https://9nzrjf-5000.csb.app/" target="_blank" class="tool-card">
+          <div class="tool-icon">
+            <i class="fas fa-undo"></i>
+          </div>
+          <h2 class="tool-title">Rollback State Appendix</h2>
+          <p class="tool-description">Rollback state of contract appendix</p>
+        </a>
+
+        <a href="https://n62qk9.csb.app/" target="_blank" class="tool-card">
+          <div class="tool-icon">
+            <i class="fas fa-exchange-alt"></i>
+          </div>
+          <h2 class="tool-title">Appendix Switch Type</h2>
+          <p class="tool-description">Switch authentication type for contract appendix</p>
+        </a>
+
+        <a href="https://6h5drs-5000.csb.app/" target="_blank" class="tool-card">
+          <div class="tool-icon">
+            <i class="fas fa-envelope"></i>
+          </div>
+          <h2 class="tool-title">Get Email Merchant</h2>
+          <p class="tool-description">Retrieve merchant email information by serial number</p>
+        </a>
+
+        <a href="https://tlvx7x-5000.csb.app/" target="_blank" class="tool-card">
+          <div class="tool-icon">
+            <i class="fas fa-box"></i>
+          </div>
+          <h2 class="tool-title">TING BOX</h2>
+          <p class="tool-description">Manage TING BOX devices and configurations</p>
+        </a>
+      </div>
+    </div>
+
+    <footer>
+      <p>&copy; 2025 Tool Management System. All rights reserved.</p>
+    </footer>
+  </main>
+
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const mainContent = document.querySelector('.main-content');
+      sidebar.classList.toggle('collapsed');
+      mainContent.classList.toggle('expanded');
+    }
+
+    function openSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      const mainContent = document.querySelector('.main-content');
+      sidebar.classList.remove('collapsed');
+      mainContent.classList.remove('expanded');
+    }
+
+    function toggleSubmenu(element) {
+      const menuItem = element.parentElement;
+      const submenu = menuItem.querySelector('.submenu');
+      
+      // Close other submenus
+      const allSubmenus = document.querySelectorAll('.submenu');
+      const allMenuItems = document.querySelectorAll('.menu-item');
+      
+      allSubmenus.forEach(sub => {
+        if (sub !== submenu) {
+          sub.style.maxHeight = '0';
+        }
+      });
+      
+      allMenuItems.forEach(item => {
+        if (item !== menuItem) {
+          item.classList.remove('active');
+        }
+      });
+
+      // Toggle current submenu
+      if (submenu.style.maxHeight === '500px') {
+        submenu.style.maxHeight = '0';
+        menuItem.classList.remove('active');
+      } else {
+        submenu.style.maxHeight = '500px';
+        menuItem.classList.add('active');
+      }
+    }
+
+    // Close submenus when clicking outside
+    document.addEventListener('click', function(event) {
+      if (!event.target.closest('.sidebar')) {
+        const allSubmenus = document.querySelectorAll('.submenu');
+        const allMenuItems = document.querySelectorAll('.menu-item');
+        
+        allSubmenus.forEach(sub => {
+          sub.style.maxHeight = '0';
+        });
+        
+        allMenuItems.forEach(item => {
+          item.classList.remove('active');
+        });
+      }
+    });
+  </script>
+</body>
+</html>
